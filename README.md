@@ -16,16 +16,7 @@ This project is a modern, fully functional contact form built using HTML, Tailwi
 HTML – Structure of the form
 Tailwind CSS – Styling and responsiveness
 JavaScript – Form validation, interactivity, and submission logic
-📂 Project Structure
 
-graphql
-Copy
-Edit
-📁 contact-form
-│── 📄 index.html    # Main HTML file
-│── 📄 style.css     # Tailwind CSS styles (if needed)
-│── 📄 script.js     # JavaScript for validation & interactivity
-│── 📄 README.md     # Project documentation
 🚀 How It Works
 1️⃣ User fills out the form
 2️⃣ Validation occurs in real-time – Name, Email, and Message fields are checked. If an error is found, a message is displayed.
