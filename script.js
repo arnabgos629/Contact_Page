@@ -1,106 +1,121 @@
 document.addEventListener("DOMContentLoaded", function () {
     const form = document.querySelector("form");
+    const inputs = form.querySelectorAll("input, textarea");
+    const submitButton = form.querySelector("button[type='submit']");
 
-    form.addEventListener("submit", function (event) {
-        event.preventDefault();
+    // Function to validate the form
+    function validateForm() {
         let isValid = true;
-        let errorMessage = "";
 
-        // Fetch input fields
-        const name = form.querySelector('input[type="text"]');
-        const email = form.querySelector('input[type="email"]');
-        const phone = form.querySelector('input[type="tel"]');
-        const dob = form.querySelector('input[type="date"]');
-        const gender = form.querySelectorAll('input[type="text"]')[1];
-        const city = form.querySelectorAll('input[type="text"]')[2];
-        const state = form.querySelectorAll('input[type="text"]')[3];
-        const country = form.querySelectorAll('input[type="text"]')[4];
-        const address = form.querySelectorAll('input[type="text"]')[5];
-        const message = form.querySelector('textarea');
-        const counseling = form.querySelector('input[name="counseling"]:checked');
-        const resume = form.querySelector('input[type="file"]');
-        const terms = form.querySelector("#terms");
+        inputs.forEach((input) => {
+            const errorMessage = input.nextElementSibling;
 
-        // Reset previous styles
-        form.querySelectorAll("input, textarea").forEach(input => input.classList.remove("error"));
-
-        // Name validation
-        if (!/^[a-zA-Z\s]{3,}$/.test(name.value.trim())) {
-            isValid = false;
-            errorMessage += "❌ Name must be at least 3 characters and contain only letters.\n";
-            name.classList.add("error");
-        }
-
-        // Email validation
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim())) {
-            isValid = false;
-            errorMessage += "❌ Enter a valid email address.\n";
-            email.classList.add("error");
-        }
-
-        // Phone validation
-        if (!/^\d{10}$/.test(phone.value.trim())) {
-            isValid = false;
-            errorMessage += "❌ Phone number must be 10 digits.\n";
-            phone.classList.add("error");
-        }
-
-        // Date of Birth validation
-        if (!dob.value) {
-            isValid = false;
-            errorMessage += "❌ Please enter your Date of Birth.\n";
-            dob.classList.add("error");
-        }
-
-        // Gender validation
-        if (!/^(Male|Female|Other)$/i.test(gender.value.trim())) {
-            isValid = false;
-            errorMessage += "❌ Enter a valid Gender (Male, Female, Other).\n";
-            gender.classList.add("error");
-        }
-
-        // City, State, Country validation
-        [city, state, country, address].forEach((field, index) => {
-            if (field.value.trim().length < 2) {
+            // Check if the input is empty
+            if (!input.value.trim()) {
+                showError(input, "This field is required.");
                 isValid = false;
-                errorMessage += `❌ ${["City", "State", "Country", "Address"][index]} must be at least 2 characters.\n`;
-                field.classList.add("error");
+            } else {
+                // Validate specific input types
+                if (input.type === "email" && !validateEmail(input.value)) {
+                    showError(input, "Please enter a valid email address.");
+                    isValid = false;
+                } else if (input.type === "tel" && !validatePhone(input.value)) {
+                    showError(input, "Please enter a valid phone number.");
+                    isValid = false;
+                } else if (input.type === "date" && !validateDate(input.value)) {
+                    showError(input, "Please enter a valid date.");
+                    isValid = false;
+                } else {
+                    clearError(input);
+                }
             }
         });
 
-        // Message validation
-        if (message.value.trim().length < 10) {
+        // Validate the terms checkbox
+        const termsCheckbox = form.querySelector("#terms");
+        if (!termsCheckbox.checked) {
+            showError(termsCheckbox, "You must agree to the terms and conditions.");
             isValid = false;
-            errorMessage += "❌ Message must be at least 10 characters long.\n";
-            message.classList.add("error");
+        } else {
+            clearError(termsCheckbox);
         }
 
-        // Counseling validation
-        if (!counseling) {
-            isValid = false;
-            errorMessage += "❌ Please select if you want counseling.\n";
-        }
+        return isValid;
+    }
 
-        // Resume validation
-        if (!resume.files.length) {
-            isValid = false;
-            errorMessage += "❌ Please upload your CV/Resume.\n";
-        }
+    // Function to show error messages
+    function showError(input, message) {
+        const errorMessage = input.nextElementSibling || document.createElement("div");
+        errorMessage.className = "text-red-500 text-sm mt-1";
+        errorMessage.textContent = message;
+        input.classList.add("border-red-500");
+        input.classList.remove("border-gray-200");
+        input.parentNode.insertBefore(errorMessage, input.nextSibling);
+    }
 
-        // Terms & Conditions validation
-        if (!terms.checked) {
-            isValid = false;
-            errorMessage += "❌ You must agree to the terms and conditions.\n";
+    // Function to clear error messages
+    function clearError(input) {
+        const errorMessage = input.nextElementSibling;
+        if (errorMessage && errorMessage.classList.contains("text-red-500")) {
+            errorMessage.remove();
         }
+        input.classList.remove("border-red-500");
+        input.classList.add("border-gray-200");
+    }
 
-        // Final check
-        if (!isValid) {
-            alert(errorMessage);
-            return;
-        }
+    // Email validation
+    function validateEmail(email) {
+        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return re.test(String(email).toLowerCase());
+    }
 
-        // Successful submission
-        alert("✅ Form submitted successfully!");
-        form.reset();
+    // Phone number validation
+    function validatePhone(phone) {
+        const re = /^\d{10}$/;
+        return re.test(String(phone));
+    }
+
+    // Date validation
+    function validateDate(date) {
+        const selectedDate = new Date(date);
+        const currentDate = new Date();
+        return selectedDate <= currentDate;
+    }
+
+    // Simulate form submission
+    function submitForm() {
+        return new Promise((resolve, reject) => {
+            setTimeout(() => {
+                if (validateForm()) {
+                    resolve("Form submitted successfully!");
+                } else {
+                    reject("Please fix the errors before submitting.");
+                }
+            }, 1000);
+        });
+    }
+
+    // Handle form submission
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        submitForm()
+            .then((message) => {
+                // Show success popup
+                alert(message);
+                form.reset(); // Reset the form
+            })
+            .catch((error) => {
+                alert(error);
+            });
+    });
+
+    // Add real-time validation for inputs
+    inputs.forEach((input) => {
+        input.addEventListener("input", () => {
+            if (input.value.trim()) {
+                clearError(input);
+            }
+        });
     });
 });
